@@ -23,7 +23,7 @@ How to do nights:
 - Then wake everyone up and inform.
 
 During day:
-- Input slayer claims, juggles etc. These can always be input safely (no resolving needed) because anyone can do them.
+- Input slayer claims, juggles etc. These can always be input safely (no resolving needed) because anyone can do them. Exception is puzzlemaster which may be rejected.
 - Also input nominations and votes. Nominations might cause deaths, so calculation will happen here; need optimisation.
 - After execution, input this. Program will say whether they are known to be dead, and whether anyone else is guaranteed dead.
 
@@ -32,6 +32,7 @@ What '[Resolve]' means:
 - If they are, then the program will give the option to commit those choices, and nobody needs to be reawoken.
 - If they are not, then the program will try to find the minimal number of people who need to change their choices.
 -- This can either be by taking random samples of possible worlds, or exhaustive search. Configurable.
+-- Nb; the faq given by others says that respecting 'no wake' is preferred. Not sure why that is the case.
 - The program will then say who needs to change their choices, and prompt to get their new choice. It will have new options for what they can choose.
 - Storyteller wakes them again and asks them to re-choose. If only one option was allowed, then they will be told what that is.
 
@@ -63,3 +64,169 @@ How the restrictions happen:
 - Each action can only happen under certain circumstances.
 - Each character has a specific set of instructions about what it sees.
 - Information given can be wrong if a player is drunk/poisoned, but that requires specific other things to happen.
+
+
+
+  Characters that will be accounted for:
+Townsfolk:
+- Cannibal (it's on the stream script. It's a very confusing role to be or force)
+- Chambermaid (two-pick wake pattern)
+- Chef (first night number wake pattern)
+- Clockmaker (ambig w/ chef etc)
+- Empath (each night number wake pattern)
+- Flowergirl (each night* yes/no [or 0/1] wake pattern)
+- Fool (death ambig)
+- Fortune Teller (two-pick wake pattern)
+- Gossip (only because it's on the stream script. Will require something clever to deal with)
+- Mathematician (each night number wake pattern)
+- Mayor (since it's on the stream script; realistically it's not good for town to be on script, as can't really rely on mayor wins. Also massive death ambig)
+- Minstrel (massive ambig, but controlled in a fashion due to knowing who minions are)
+- Monk (death ambig, each night* choose pattern)
+- Oracle (each night* number)
+- Pixie (since on stream script - unique night pattern and requires storyteller input)
+- Ravenkeeper (forceable, but only in certain ways. May be annoying to play with properly)
+- Sage (As with Ravenkeeper)
+- Sailor (drunk and death ambig)
+- Seamstress (slightly odd wake pattern)
+- Soldier (death ambig)
+- Steward (unique wake pattern, slight mix w/ HP and Balloonist)
+- Tea Lady (death ambig)
+- Town Crier (similar to Flowergirl)
+
+
+Outsiders:
+- Barber (demon choice about death)
+- Damsel (minion choice about setup)
+- Drunk (info ambig)
+- Puzzledrunk (info ambig, day actions)
+- Recluse (info ambig)
+- Sweetheart (info ambig)
+
+
+
+Minions:
+- Assassin (unique wake pattern, changeable later)
+- Baron (no wake, outsider manip)
+- DA (death ambiguity)
+- Goblin (no wake, but the way it's handled needs explicit calling out. Everyone must play until we know it's not a Goblin; if they fail to guarantee, then evil wins. It works well with the spirit, just in a more advanced manner)
+- Mastermind (no wake)
+- Poisoner (info ruining)
+- Scarlet Woman (no wake; maybe too powerful for evil though)
+- Witch (death ambig)
+
+
+Demons:
+- Imp (may not go on script, requires minion cooperation)
+- Lleech (death ambiguity and first night waking)
+- No Dashii (though the poisoning could well be hard to pin down)
+- Po (forceable by demon)
+- Pukka (waking pattern of Lleech)
+- Vigormortis (forceable by minions)
+- Vortox (messed up info)
+
+
+
+  Characters that might be accounted for:
+Townsfolk:
+- Artist (powerful and difficult to arrange for the question to be answered)
+- Atheist (if you're setting up an atheist version, don't you just do your own thing?)
+- Balloonist (easy to force, quite powerful; fourth day is quite likely "this is the demon" or "you've already picked the demon before")
+- Choirboy + King (Demon has to pick the king to exist)
+- Courtier (easy to force and powerful - more like a nerf to philo)
+- Dreamer (easy to force and powerful)
+- Farmer (any good player can force it to happen and collapse this early)
+- Gambler (any good player can force it, and collapse things early)
+- General (easy to force, but will require asking the storyteller what they think)
+- Grandmother (easy to force and strong for town)
+- High Priestess (will require storyteller input, but does match balloonist wake pattern)
+- Huntsman (Damsel will be on script, so may be nice to give town a chance to convert if two players coordinate. Might be too strong though, as evil usually can't stop it; I think it'll become a meta)
+- Innkeeper (drunking, but unique wake pattern)
+- Investigator (quite likely to end up as a drunk)
+- Juggler (relatively easy to force, but also requires everyone to try to get a juggler number night 2 which isn't fun)
+- Knight (unique wake pattern)
+- Librarian (like investigator)
+- Lycanthrope (lots of death ambig, even for evil team)
+- Nightwatchman (requires coordination)
+- Noble (unique first night)
+- Pacifist (death ambig, but in a really harmful way to evil)
+- Philosopher (forceable and very powerful)
+- Professor (goes along with Shab in a way - messes with the 'one action per night' thing)
+- Savant (only forceable by one player, and has same problems as gossip - also, really dangerous with vortox and town choosing the two statements)
+- Shugenja (may need to convert to a 0/1 number rather than cws / ccws)
+- Slayer (does put the evil team on a clock, but it's not likely to ever work)
+- Undertaker (unique pattern and forcing, but almost always drunk)
+- Washerwoman (same as Inv/Lib)
+
+
+Outsiders:
+- Acrobat (death ambig)
+- Goon (they get to control their alignment)
+- Hatter (minions and demons have to coordinate)
+- Klutz (kind of useful for town, alignment is known at all times too)
+- Moonchild (similar to klutz)
+- Plague Doctor (storyteller might have to decide, and may be forced into waiting for someone to pick to become an outsider)
+- Saint (similar to Goblin - but it does make everyone scared of choosing to not wake)
+- Snitch (minion setup choice; is picking out of play roles too powerful though?)
+- Tinker (though it functionally ends up not activating unless forced by someone else)
+
+
+Minions:
+- Pit-Hag (interesting; the picked player would have to go along with being swapped (without knowing how to) unless it's mechanically forced (i.e. demon bluffs). Goes against the "people wake for one thing only" situation.
+- Psychopath (perfectly valid, up til the point of roshambo. How to decide doing that if evil aren't decided yet?)
+
+
+  Demons:
+- Ojo (how to handle arbitrary deaths? Will have to say that no players die, else demon may well kill themselves accidentally.)
+- Al-Hadikhia (public calls can be made unambiguously, but is it the right sort of interesting? And what about scarlet woman jinx?)
+- Fang Gu (requires cooperation from an outsider player, interesting idea)
+- Shabaloth (town might be able to force resurrections, weakening it greatly)
+- Zombuul (demon has to be careful about choosing not to wake)
+
+
+
+
+Characters that will not be accounted for:
+Townsfolk:
+- Alchemist (too powerful confirmatory)
+- Amnesiac (too chaotic)
+- Bounty Hunter (requires someone to pick to become evil, and someone else to pick an evil player - then the bounty hunter has a lot of power, as it's pretty confirmatory)
+- Cult Leader (everyone will try to become evil. Maybe interesting as ambig with Goon though)
+- Engineer (way too powerful for good)
+- Exorcist (demon has to pick to go along with it, and in a way that's very annoying to do)
+- Fisherman ('advice' is way too generic to work out if valid or not)
+- Magician (setup problems)
+- Poppygrower (setup problems)
+- Preacher (requires minions to go along with it)
+- Snake Charmer (requires demon to go along with it, and not fun to try to hit for townie either)
+- Virgin (can't force retroactive execution)
+
+
+Outsiders:
+- Butler (can't enforce voting)
+- Golem (can't enforce nominations)
+- Heretic (causes genuine 'flip a coin' problems)
+- Lunatic (setup problems)
+- Mutant (can't force executions retroactively)
+- Politician (causes 'flip a coin' problems)
+
+
+Minions:
+- Boomdandy (defeats the whole point of the minion if it doesn't happen at point of execution and limits town's time - also pretty much impossible to take it retroactively, probably only 3-4 left alive when guaranteed already)
+- Cerenovus (it's unambiguous and doable, just not in the spirit of this variant)
+- Evil Twin (as with Cerenovus. Interestingly, the Evil Twin actually knows the other character)
+- Fearmonger (as with Cerenovus)
+- Harpy (as with Cerenovus - though, more likely)
+- Godfather (unique wake pattern, can force specific outsiders - unambiguity goes against the spirit)
+- Marionette (Storyteller chooses if it goes in and has to force Demon to pick it)
+- Mezepheles (can force themselves, as well as unfun words)
+- Organ grinder (Storyteller would have to choose. Might be fun as a "oh, evil have collapsed", but that's good for town)
+- Spy (unless we have some nice representation of the Grim. V. interesting if possible).
+- Vizier (how do we do the initial declaration?)
+- Widow (as with spy, though funnily enough they're less useful than the spy in this variant)
+
+
+Demons:
+- Legion (Storyteller decides beforehand, and too much ambiguity in kills at night)
+- Leviathan (Storyteller decides beforehand, but maybe could work?)
+- Lil' Monsta (so many jinxes)
+- Riot (no)
