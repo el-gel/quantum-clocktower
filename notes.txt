@@ -1,0 +1,65 @@
+How to play:
+
+Setting up:
+- Input the evil and good players into the program.
+- Storyteller will wake evil players up and show them all to each other.
+- Storyteller individually wakes up evil players to ask them to either show three out of play roles, a damsel, or nothing. First is demon, others minions.
+-- If Snitch is going to be handled, then instead this is 'I am a demon/minion', with out of play roles if demon and damsel/snitch info if minion and choosing to see it.
+- Input this into the program.
+- [Resolve]
+- Continue as any other night.
+
+How to do nights:
+- Click 'start night'.
+- Program will prompt with a player name.
+- Wake up that player and ask them what the storyteller will tell them.
+-- Need to have specific instructions for how they indicate things.
+- Try to input this into the program. If it says not possible, then tell the player this and make them pick again. Program will say what options there are, including whether there's only one.
+- Program will then prompt for the next player.
+- Repeat until all players have been prompted; program will automatically try to resolve.
+- [Resolve]
+- When resolved, program will have the option to commit the choices.
+- Program will then show the current visible state of everyone; that is, who is possibly alive, and who is definitely dead (plus what's changed since last time)
+- Then wake everyone up and inform.
+
+During day:
+- Input slayer claims, juggles etc. These can always be input safely (no resolving needed) because anyone can do them.
+- Also input nominations and votes. Nominations might cause deaths, so calculation will happen here; need optimisation.
+- After execution, input this. Program will say whether they are known to be dead, and whether anyone else is guaranteed dead.
+
+What '[Resolve]' means:
+- After inputting actions following taking choices, the program will see if they are logically consistent.
+- If they are, then the program will give the option to commit those choices, and nobody needs to be reawoken.
+- If they are not, then the program will try to find the minimal number of people who need to change their choices.
+-- This can either be by taking random samples of possible worlds, or exhaustive search. Configurable.
+- The program will then say who needs to change their choices, and prompt to get their new choice. It will have new options for what they can choose.
+- Storyteller wakes them again and asks them to re-choose. If only one option was allowed, then they will be told what that is.
+
+
+Notes:
+
+Setup:
+
+[pick if atheist. Honestly, don't care about that.]
+1. Evil team is handed out.
+2. Pick minions and demons.
+2a. Demons pick out three out-of-play characters.
+2b. Minions pick to be shown damsel or not.
+2c. Then pick randomly which option is possible.
+
+Then first night.
+
+
+
+Information to record possibilities of:
+- Who each person can be.
+- Which characters are guaranteed to be in play.
+- Which characters are guaranteed to not be in play.
+
+Information to record that restricts:
+- What actions each player chose to have happen to them.
+
+How the restrictions happen:
+- Each action can only happen under certain circumstances.
+- Each character has a specific set of instructions about what it sees.
+- Information given can be wrong if a player is drunk/poisoned, but that requires specific other things to happen.
