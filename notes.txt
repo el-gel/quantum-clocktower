@@ -56,16 +56,52 @@ Information to record possibilities of:
 - Who each person can be.
 - Which characters are guaranteed to be in play.
 - Which characters are guaranteed to not be in play.
+- Storyteller decisions.
 
 Information to record that restricts:
 - What actions each player chose to have happen to them.
 
 How the restrictions happen:
 - Each action can only happen under certain circumstances.
-- Each character has a specific set of instructions about what it sees.
+- Each character has a specific set of instructions about what it sees and storyteller decisions it forces.
 - Information given can be wrong if a player is drunk/poisoned, but that requires specific other things to happen.
 
 
+There are 'default actions' which only need a player to be alive to happen.
+There are also 'triggered actions' which happen from someone doing something.
+Want to allow players to specify default actions without being rejecting if they didn't say the triggered actions they should have done.
+E.g., don't reject a player's picks at night just because they didn't predict they were about to be barber swapped; instead take the picks and prompt the barber swap.
+
+
+Objects to use:
+- Probability state
+-- What possible characters can each player be
+-- What characters must be in play
+-- What characters must no be in play (technically not needed)
+-- What possible storyteller decisions could have been made
+- Player decisions
+-- Fixed actions that have been committed
+- Potential decisions
+-- Actions that could be taken and need to be confirmed
+- Characters
+-- What patterns of behaviour each character causes
+-- What events each character causes
+-- What storyteller decisions each character requires
+-- Night order of events
+- Events/timeline
+-- What happens at what time each night
+-- What events have happened previously in the night or day
+-- Changes in player state
+- Reminder tokens
+-- Having an effect on players in some manner
+
+
+
+
+
+
+
+==== Characters ====
 
   Characters that will be accounted for:
 Townsfolk:
