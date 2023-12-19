@@ -122,6 +122,8 @@ Algorithm for determining who is droisoned:
 ==== Rules to consider ====
 Can only be considered a gossip if you gossip on the first day
 If a self droisoning character (e.g. snake charmer) is droisoned by someone else, does that ping a mathematician?
+Can a gossip sink their kill in a dead player? How about a fool?
+If someone is changed into the Drunk, do they get told? Do they have to be told they're what the previous Drunk saw?
 
 
 

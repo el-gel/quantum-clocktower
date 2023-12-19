@@ -96,6 +96,10 @@ class BOTCTime:
     def __repr__(self):
         return str(self)
 
+    def __hash__(self):
+        # Assumption that no more than 60 characters in night order and 10 seconds
+        return self.s + 10*self.m + 6000*self.h
+
 
 class Clock:
     def __init__(self, start_time=None):

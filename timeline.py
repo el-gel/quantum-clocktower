@@ -44,18 +44,18 @@ States are stored in a 'states' attribute. This is lazily sorted on lookup.
             IS_TIMELINED = True
             def __init__(self, *args, time=None, clock=None, **kwargs):
                 self.setup(time, clock)
-                self.pause_updates() # Don't want the __init__ to do state changes
+                self.pause_updates() # Don't want __init__ to do state changes
                 super().__init__(*args, **kwargs)
                 self.resume_updates()
-                self.state_change(time)
+                self.state_change(time) # Initial state
                 
 
             def setup(self, time=None, clock=None):
                 self.clock = clock if clock else Clock()
-                self.states = []
-                self.events = [] # Not actually used by this decorator.
-                self._stdirty = False # Lazy sorting
-                self._evdirty = False
+                self._states = {}
+                self._events = {} # Not actually used by this decorator.
+                self._sttimes = []
+                self._evtimes = []
                 self._paused = False
 
             # Methods specific to this wrapping
@@ -91,16 +91,26 @@ States are stored in a 'states' attribute. This is lazily sorted on lookup.
 
             # Getting state and event objects
 
+            @property
+            def states(self):
+                """Ordered list of (time, state) tuples."""
+                return [(time, self._states[time]) for time in self._sttimes]
+
+            @property
+            def events(self):
+                """Ordered list of (time, event) tuples."""
+                return [(time, self._events[time]) for time in self._evtimes]
+
             def at(self, time=None):
-                """State of this player at a specific time. By default checks current clock time."""
-                self._sort()
+                """State at a specific time. By default checks current clock time."""
                 time = time if time else self.clock.now
                 # Assumption is that this will most often be looking at recent events
                 # So look backwards from the last event
-                for st_time, state in reversed(self.states):
+                for st_time in reversed(self._sttimes):
                     if st_time <= time:
-                        if state.time != time:
-                            # TODO: memoise by using set_state
+                        state = self._states[st_time]
+                        if st_time != time:
+                            # TODO: memoise with set_state
                             return state.copy(time=time)
                         return state
 
@@ -110,31 +120,29 @@ States are stored in a 'states' attribute. This is lazily sorted on lookup.
 
             def latest(self):
                 """Latest state in this timeline. May be in the future if clock has been rewound."""
-                self._sort()
-                return self.states[-1][1]
+                return self._states[self.last_update]
 
             def last_update(self):
-                """Last update to this object."""
-                self._sort()
-                return self.states[-1][0]
+                """Time of last update to this object."""
+                return self._sttimes[-1]
 
             def states_during(self, start_time, end_time, states_only=True):
                 """All states seen between specified times."""
                 # TODO: this can't handle attributes having different
                 #       times when their state changed; it skips over those
-                self._sort()
                 ret = [self.at(start_time)] if states_only else [(start_time, self.at(start_time))]
-                for time, state in self.states:
+                for time in self._sttimes:
                     if time > start_time and time <= end_time:
+                        state = self._states[time]
                         ret.append(state if states_only else (time, state))
                 return ret
 
             def events_during(self, start_time, end_time, events_only=True):
                 """All events seen between specified times."""
-                self._sort()
                 ret = []
-                for time, event in self.events:
+                for time in self._evtimes:
                     if time >= start_time and time <= end_time:
+                        event = self._events[time]
                         ret.append(event if events_only else (time, event))
                 return ret
 
@@ -147,25 +155,18 @@ States are stored in a 'states' attribute. This is lazily sorted on lookup.
                 # Might work now with the change in at() to copy the state
                 #if state == self.at(time):
                 #    return
-                # TODO: if a state for time already in here, overwrite
-                self.states.append((time, state))
-                self._stdirty = True
+                self._sttimes.append(time)
+                self._sttimes.sort()
+                self._states[time] = state
 
             def add_event(self, event, time=None):
                 """Specify an event happening."""
                 time = time if time else self.clock.now
-                self.events.append((time, event))
-                self._evdirty = True
+                self._evtimes.append(time)
+                self._evtimes.sort()
+                self._events[time] = event
 
-            # Sorting and management
-
-            def _sort(self):
-                if self._stdirty:
-                    self.states.sort(key=lambda tst: tst[0])
-                    self._stdirty = False
-                if self._evdirty:
-                    self.events.sort(key=lambda tev: tev[0])
-                    self._evdirty = False
+            # Utility functions
 
             def _tsafe(self, value):
                 """Timelined version of something."""
