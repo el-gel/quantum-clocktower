@@ -43,15 +43,20 @@ States are stored in a 'states' attribute. This is lazily sorted on lookup.
             """A timeline of a player or other object."""
             IS_TIMELINED = True
             def __init__(self, *args, time=None, clock=None, **kwargs):
+                self.setup(time, clock)
+                self.pause_updates() # Don't want the __init__ to do state changes
                 super().__init__(*args, **kwargs)
-                self.setup(time=time, clock=clock)
+                self.resume_updates()
+                self.state_change(time)
+                
 
             def setup(self, time=None, clock=None):
                 self.clock = clock if clock else Clock()
-                self.states = [(time if time else self.clock.now, self.to_state())]
+                self.states = []
                 self.events = [] # Not actually used by this decorator.
-                self.stdirty = False # Lazy sorting
-                self.evdirty = False
+                self._stdirty = False # Lazy sorting
+                self._evdirty = False
+                self._paused = False
 
             # Methods specific to this wrapping
 
@@ -72,8 +77,17 @@ States are stored in a 'states' attribute. This is lazily sorted on lookup.
 
             # State has changed
 
-            def state_change(self):
-                self.set_state(self.to_state())
+            def pause_updates(self):
+                was = self._paused
+                self._paused = True
+                return was
+
+            def resume_updates(self):
+                self._paused = False
+
+            def state_change(self, time=None):
+                if not self._paused:
+                    self.set_state(self.to_state(), time=time)
 
             # Getting state and event objects
 
@@ -86,6 +100,7 @@ States are stored in a 'states' attribute. This is lazily sorted on lookup.
                 for st_time, state in reversed(self.states):
                     if st_time <= time:
                         if state.time != time:
+                            # TODO: memoise by using set_state
                             return state.copy(time=time)
                         return state
 
@@ -105,6 +120,8 @@ States are stored in a 'states' attribute. This is lazily sorted on lookup.
 
             def states_during(self, start_time, end_time, states_only=True):
                 """All states seen between specified times."""
+                # TODO: this can't handle attributes having different
+                #       times when their state changed; it skips over those
                 self._sort()
                 ret = [self.at(start_time)] if states_only else [(start_time, self.at(start_time))]
                 for time, state in self.states:
@@ -126,28 +143,29 @@ States are stored in a 'states' attribute. This is lazily sorted on lookup.
             def set_state(self, state, time=None):
                 """Specify state at a certain time (default is now)."""
                 time = time if time else self.clock.now
-                # TODO: this doesn't quite work, doesn't see changes in nested timeline objects
+                # TODO: equality check doesn't quite work, doesn't see changes in nested timeline objects
                 # Might work now with the change in at() to copy the state
                 #if state == self.at(time):
                 #    return
+                # TODO: if a state for time already in here, overwrite
                 self.states.append((time, state))
-                self.stdirty = True
+                self._stdirty = True
 
             def add_event(self, event, time=None):
                 """Specify an event happening."""
                 time = time if time else self.clock.now
                 self.events.append((time, event))
-                self.evdirty = True
+                self._evdirty = True
 
             # Sorting and management
 
             def _sort(self):
-                if self.stdirty:
+                if self._stdirty:
                     self.states.sort(key=lambda tst: tst[0])
-                    self.stdirty = False
-                if self.evdirty:
+                    self._stdirty = False
+                if self._evdirty:
                     self.events.sort(key=lambda tev: tev[0])
-                    self.evdirty = False
+                    self._evdirty = False
 
             def _tsafe(self, value):
                 """Timelined version of something."""
@@ -169,6 +187,7 @@ States are stored in a 'states' attribute. This is lazily sorted on lookup.
 
 # Not exposing the value except through at() should be fine, as this should only be found through containing objects
 class SnapshotStatic(object):
+    TIMELINED = True
     def __init__(self, value, time):
         self.value = value
         self.time = time
@@ -180,6 +199,7 @@ class SnapshotStatic(object):
 # Overriding tuple to get all the nice things.
 # TODO: any other methods to override?
 class SnapshotTuple(tuple):
+    TIMELINED = True
     def __new__(cls, iterable=(), time=None):
         assert time
         ret = tuple.__new__(cls, iterable)
@@ -203,6 +223,7 @@ class SnapshotTuple(tuple):
 
 # Mimics a class with attributes, passing values through snapshot and at before returning them
 class SnapshotAttrs(object):
+    TIMELINED = True
     def __init__(self, attrs, backer, time=None):
         assert time
         for attr in attrs:
@@ -228,12 +249,13 @@ class SnapshotAttrs(object):
             setattr(ret, attr, super().__getattribute__(name))
         return ret
     def __str__(self):
-        return str({attr:getattr(self, attr, "NOT-SET") for attr in self.attrs})
+        return str({attr:getattr(self, attr, None) for attr in self.attrs})
 
 # Used for TimelinedDict, but not otherwise exposed
 # TODO: Making read-only after creation
 # TODO: Other 'getter' methods
 class SnapshotDict(dict):
+    TIMELINED = True
     def __new__(cls, *args, time=None, **kwargs):
         assert time
         ret = dict.__new__(cls, *args, **kwargs)
@@ -256,6 +278,7 @@ class SnapshotDict(dict):
 
 # Similar to SnapshotDict
 class SnapshotSet(set):
+    TIMELINED = True
     def __new__(cls, *args, time=None, **kwargs):
         assert time
         ret = set.__new__(cls, *args, **kwargs)
@@ -292,7 +315,6 @@ class TimelinedList(list):
     def __new__(cls, iterable=(), time=None, clock=None):
         clock = clock if clock else Clock()
         ret = list.__new__(cls, [to_timelined(value, time=time, clock=clock) for value in iterable])
-        ret.setup(time=time, clock=clock)
         return ret
     def to_state(self):
         return SnapshotTuple(self, time=self.clock.now)
@@ -307,8 +329,8 @@ class TimelinedList(list):
 # TODO: __delitem__, __ior__, editing items/keys, setdefault
 class TimelinedDict(dict):
     def __new__(cls, *args, time=None, clock=None, **kwargs):
+        # TODO: timelined internal values
         ret = dict.__new__(cls, *args, **kwargs)
-        ret.setup(time=time, clock=clock)
         return ret
     def to_state(self):
         return SnapshotDict(self, time=self.clock.now)
@@ -318,8 +340,8 @@ class TimelinedDict(dict):
 # TODO: __iand__, __ior__, __isub__, __ixor__
 class TimelinedSet(set):
     def __new__(cls, *args, time=None, clock=None, **kwargs):
+        # TODO: timelined internal values
         ret = set.__new__(cls, *args, **kwargs)
-        ret.setup(time=time, clock=clock)
         return ret
     def to_state(self):
         return SnapshotSet(self, time=self.clock.now)
@@ -335,11 +357,11 @@ def to_timelined(obj, time=None, clock=None):
     """A timelined version of this object."""
     if is_timelined(obj):
         return obj
-    if isinstance(obj, list):
+    if type(obj) is list:
         return TimelinedList(obj, time=time, clock=clock)
-    if isinstance(obj, set):
+    if type(obj) is set:
         return TimelinedSet(obj, time=time, clock=clock)
-    if isinstance(obj, dict):
+    if type(obj) is dict:
         return TimelinedDict(obj, time=time, clock=clock)
     # TODO: Warn about non-int/str/tuple objects getting this far
     # Things here should be static
@@ -353,10 +375,10 @@ To avoid cyclic reference problems, timelined objects get returned as is.
   References to these objects will already be passed through an at() method."""
     if is_timelined(obj):
         return obj
-    if isinstance(obj, tuple):
+    if type(obj) is tuple:
         return SnapshotTuple(obj, time)
-    if isinstance(obj, (list, set, dict)):
-        raise ValueError("Cannot snapshot a naked list, set or dict; must use Timelined versions.")
+    if type(obj) in (list, set, dict):
+        raise ValueError("Cannot snapshot a base list, set or dict; must use Timelined versions.")
     else:
         return SnapshotStatic(obj, time)
 
@@ -364,23 +386,24 @@ def ssat(obj, time):
     """Equivalent to snapshot(obj, time).at(time)."""
     if is_timelined(obj):
         return obj.at(time)
-    if isinstance(obj, tuple):
+    if type(obj) is tuple:
         return SnapshotTuple(obj, time)
-    if isinstance(obj, (list, set, dict)):
-        raise ValueError("Cannot snapshot a naked list, set or dict; must use Timelined versions.")
+    if type(obj) in (list, set, dict):
+        raise ValueError("Cannot snapshot a base list, set or dict; must use Timelined versions.")
     else:
         return obj # SnapshotStatic.at(time) would just send this back
 
-    
-C = Clock()
-print("make")
-k = TimelinedList((8,),clock=C)
-C.tick()
-print("append")
-k.append([2,3,4])
-C.tick()
-print("subedit")
-k[1].append(4)
-m = k.at(BOTCTime(0,1,0))
 
-print(m)
+if __name__ == "__main__":
+    C = Clock()
+    print("make")
+    k = TimelinedList((8,),clock=C)
+    C.tick()
+    print("append")
+    k.append([2,3,4])
+    C.tick()
+    print("subedit")
+    k[1].append(4)
+    m = k.at(BOTCTime(0,1,0))
+
+    print(m)

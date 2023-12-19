@@ -95,6 +95,12 @@ Objects to use:
 - Reminder tokens
 -- Having an effect on players in some manner
 
+Player quantum state with timelines:
+Can use a MultiValue for the character options for a player, which is a static object for specific times.
+This character can only change when a player is told - unless a character is turned into the Drunk?
+The times of change are well defined in any case, so it should be okay to use this.
+
+
 
 Poisoning loops:
 Need to be able to handle cyclic loops of droisoning.
@@ -111,6 +117,11 @@ Algorithm for determining who is droisoned:
 - If anyone is not being picked by someone else, then the player(s) they are trying to droison are indeed droisoned, and all those nodes are removed from the graph; then repeat.
 - Otherwise, there must be a loop; but that doesn't mean everyone involved is droisoned, only those who are pointING. Droisoning reminder tokens stay on, but others are hidden.
 
+
+
+==== Rules to consider ====
+Can only be considered a gossip if you gossip on the first day
+If a self droisoning character (e.g. snake charmer) is droisoned by someone else, does that ping a mathematician?
 
 
 
