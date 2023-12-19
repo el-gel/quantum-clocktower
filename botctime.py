@@ -33,7 +33,8 @@ def night(n, minute=DUSK, second=0):
     return BOTCTime(2*(n-1), minute, second)
 
 class BOTCTime:
-    def __init__(self, hour, minute=DAWN, second=0):
+    """Time classwith internal representation as a tuple."""
+    def __init__(self, hour=0, minute=0, second=0):
         self.t = (hour, minute, second)
 
     @property
@@ -80,6 +81,12 @@ class BOTCTime:
         assert isinstance(other, BOTCTime)
         return self.t >= other.t
 
+    def __add__(self, other):
+        if isinstance(other, BOTCTime):
+            return BOTCTime(self.h + other.h, self.m + other.m, self.s + other.s)
+        assert isinstance(other, tuple) and len(other) == 3
+        return BOTCTime(self.h + other[0], self.m + other[1], self.s + other[2])
+
     def __str__(self):
         if self.day:
             return "Day {} ({}:{})".format(self.n, self.m, self.s)
@@ -88,3 +95,40 @@ class BOTCTime:
 
     def __repr__(self):
         return str(self)
+
+
+class Clock:
+    def __init__(self, start_time=None):
+        self.now = start_time if start_time else night(1)
+        self.moments = [self.now]
+
+    def tick(self, hour=0, minute=1, second=0):
+        """Add a certain amount of time to the clock."""
+        # TODO: Handling wrapping round when reaching max minutes?
+        self.now = self.now + (hour, minute, second)
+        self.moments.append(self.now)
+
+    def previous(self, hour=False, minute=False, second=True, start=False):
+        """A previous moment before the current one.
+
+By default returns the last moment that was seen before now.
+Can choose to look at the previous minute or hour.
+  If so, by default returns the last moment in that minute or hour. Can change to first."""
+        # Account for the clock being changed back. Keep moving back
+        # TODO: account for the above. Currently only does default behaviour.
+        prev_moment = None
+        for moment in reversed(self.moments):
+            if moment >= self.now:
+                continue
+            return moment
+        # Reached the first moment without finding anything
+        # Could error instead of just passing back the start time
+        return moment
+
+    def last_night(self):
+        """The time periods that were in last night."""
+        raise NotImplementedError()
+
+    def last_day(self):
+        """The time periods that were in last day."""
+        raise NotImplementedError()

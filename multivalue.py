@@ -31,15 +31,19 @@ def binaries(methods):
         return BinaryWrap
     return method_wrapper
 
-@unaries(("__ceil__","__float__","__floor__","__int__","__invert__","__neg__","__pos__","__round__","__trunc__"))
+@unaries(("__ceil__","__float__","__floor__","__int__","__invert__",
+          "__neg__","__pos__","__round__","__trunc__",))
 @binaries(("__add__","__eq__","__floordiv__","__ge__","__gt__","__le__","__lshift__","__lt__",
            "__mod__","__mul__","__ne__","__pow__","__radd__","__rand__","__rdiv__","__rfloordiv__",
            "__rlshift__","__rmod__","__rmul__","__ror__","__rpow__","__rrshift__","__rshift__",
-           "__rsub__","__rtruediv__","__rxor__","__sub__","__truediv__","__xor__"))
+           "__rsub__","__rtruediv__","__rxor__","__sub__","__truediv__","__xor__","__contains__",))
 # Methods optimised in class: __or__, __and__
 # Methods deliberately not included: __bool__ (better to force usage any() or all(), else bugs)
+# Methods with special function: __getattribute__ (tries to get from values if not in self)
 class MultiValue(tuple):
-    """Multiple options. Supports multivalued +,-,*,/,|,&,==,>,< but not bool"""
+    """Multiple options, with attributes and operations transparently passed through to values.
+
+Does not make any guarantees about orderings or sizes of derived properties- duplicates are removed."""
     def __new__(cls, iterable=(), rem_dups=False):
         """Pass in rem_dups=True if there might be duplicates in the values."""
         if rem_dups:
@@ -69,6 +73,13 @@ truth_fn: Optional function for deciding truthiness; e.g., >= 2"""
                 if True in out:
                     break
         return MultiValue(out)
+
+    # Specially handled pass-throughs
+
+    def __getattribute__(self, name):
+        if hasattr(self, name):
+            return super().__getattribute__(name)
+        return MultiValue([getattr(val, name) for val in self.values], rem_dups=True)
 
     # Optimised or removed __ operations
 

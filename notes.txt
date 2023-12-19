@@ -96,7 +96,20 @@ Objects to use:
 -- Having an effect on players in some manner
 
 
+Poisoning loops:
+Need to be able to handle cyclic loops of droisoning.
+Can't just have reminder tokens setting droison status; need to have a higher level overview to catch loops.
+This only matters for droisoning though, so handle droisoning reminder tokens specially.
+Every character will put down a token if not droisoned at the point of acting (if token is stopped by droisoning).
+If a character is droisoned after putting a relevant token down, that token is hidden (not removed). If undroisoned later, that token returns. It's also still there for considering droisoning loops later.
+Then, when a character with active reminder tokens is droisoned, we do the loop check and update everybody's tokens to be hidden or not, as well as player droison state (tracked via a list of 'who's droisoning me').
+Nb; sailor drunking themselves is a loop. So this is almost always going to be relevant; can't just design the script without loops.
 
+Algorithm for determining who is droisoned:
+- Know who is currently attempting to droison whom.
+- This creates a directed, potentially cyclic graph.
+- If anyone is not being picked by someone else, then the player(s) they are trying to droison are indeed droisoned, and all those nodes are removed from the graph; then repeat.
+- Otherwise, there must be a loop; but that doesn't mean everyone involved is droisoned, only those who are pointING. Droisoning reminder tokens stay on, but others are hidden.
 
 
 
